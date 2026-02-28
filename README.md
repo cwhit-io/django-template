@@ -83,7 +83,7 @@ make help
 | `make makemigrations` | Create new migrations |
 | `make collectstatic` | Collect static files |
 | `make check` | Run Django deployment checks (`manage.py check --deploy`) |
-| `make startapp name=myapp` | Scaffold a new app in `apps/myapp/` |
+| `make startapp name=myapp` | Scaffold a new app in `apps/myapp/` with correct `AppConfig` naming |
 | `make superuser` | Create a Django superuser |
 | `make shell` | Open Django shell |
 | `make test` | Run pytest with coverage report |

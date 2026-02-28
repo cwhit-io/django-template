@@ -2,16 +2,11 @@
 Base Django settings shared by all environments.
 """
 
-import sys
 from pathlib import Path
 
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-# Allow apps in the apps/ directory to be referenced by short name
-# e.g. "blog" instead of "apps.blog" in INSTALLED_APPS
-sys.path.insert(0, str(BASE_DIR / "apps"))
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -46,6 +41,22 @@ INSTALLED_APPS = [
     "django_browser_reload",
     # Local
     "core",
+    # Apps
+    "apps.pages",
+    # Wagtail
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.documents",
+    "wagtail.images",
+    "wagtail.search",
+    "wagtail.admin",
+    "wagtail",
+    "modelcluster",
+    "taggit",
 ]
 
 AUTH_USER_MODEL = "core.User"
@@ -59,6 +70,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -184,3 +196,8 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
+
+# Wagtail
+WAGTAIL_SITE_NAME = env("WAGTAIL_SITE_NAME", default="My Site")
+WAGTAILADMIN_BASE_URL = env("WAGTAILADMIN_BASE_URL", default="http://localhost:8085")
+WAGTAIL_ENABLE_UPDATE_CHECK = False

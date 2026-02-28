@@ -1,4 +1,4 @@
-.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format check clean reset pre-commit-install startapp docker-build docker-up docker-up-dev docker-down docker-logs docker-shell docker-manage
+.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser wagtail-init collectstatic lint lint-fix format commit check clean reset pre-commit-install startapp docker-build docker-up docker-up-dev docker-down docker-logs docker-shell docker-manage
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -31,7 +31,7 @@ env: install ## Create .env from .env.example if missing, with a generated SECRE
 pre-commit-install: install ## Install pre-commit hooks
 	$(VENV)/bin/pre-commit install
 
-setup: env pre-commit-install migrate collectstatic ## Bootstrap project from scratch (create .env, install deps, hooks, run migrations, collect static)
+setup: env pre-commit-install migrate wagtail-init collectstatic ## Bootstrap project from scratch (create .env, install deps, hooks, run migrations, init Wagtail, collect static)
 
 run: venv ## Start Daphne, Celery worker, and Tailwind in parallel
 	$(MAKE) -j3 dev worker tailwind
@@ -57,6 +57,13 @@ lint-fix: venv ## Lint code with ruff
 format: venv ## Auto-format code with ruff
 	$(VENV)/bin/ruff format .
 
+commit: venv ## Format, fix, stage everything, then commit (usage: make commit m="message")
+	@[ "$(m)" ] || (echo "Usage: make commit m=\"your message\""; exit 1)
+	$(VENV)/bin/ruff check --fix .
+	$(VENV)/bin/ruff format .
+	git add -A
+	git commit -m "$(m)"
+
 migrate: venv ## Apply database migrations
 	$(PYTHON) manage.py migrate
 
@@ -69,6 +76,9 @@ shell: venv ## Open Django shell
 superuser: venv ## Create a superuser
 	$(PYTHON) manage.py createsuperuser
 
+wagtail-init: venv ## Bootstrap Wagtail with default Site and HomePage
+	$(PYTHON) manage.py bootstrap_wagtail
+
 collectstatic: venv ## Collect static files
 	$(PYTHON) manage.py collectstatic --noinput
 
@@ -79,9 +89,10 @@ startapp: venv ## Scaffold a new app in apps/ (usage: make startapp name=myapp)
 	@[ "$(name)" ] || (echo "Usage: make startapp name=<appname>"; exit 1)
 	mkdir -p apps/$(name)
 	$(PYTHON) manage.py startapp $(name) apps/$(name)
+	@sed -i "s/name = '$(name)'/name = 'apps.$(name)'/" apps/$(name)/apps.py
 	@echo ""
 	@echo "App created at apps/$(name)/"
-	@echo "Add '$(name)' to INSTALLED_APPS in config/settings/base.py"
+	@echo "Add 'apps.$(name)' to INSTALLED_APPS in config/settings/base.py"
 
 clean: ## Remove cache files, compiled Python, and the SQLite database
 	find . -type f -name "*.pyc" -delete

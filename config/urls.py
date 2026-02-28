@@ -19,6 +19,9 @@ from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
+from wagtail import urls as wagtail_urls
+from wagtail.admin import urls as wagtailadmin_urls
+from wagtail.documents import urls as wagtaildocs_urls
 
 from config.api import api
 
@@ -26,7 +29,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
     path("ping/", lambda r: HttpResponse("pong"), name="ping"),
-    path("", include("core.urls", namespace="core")),
+    path("cms/", include(wagtailadmin_urls)),
+    path("documents/", include(wagtaildocs_urls)),
+    path("demo/", include("core.urls", namespace="core")),
+    # Wagtail catch-all — must be last
+    path("", include(wagtail_urls)),
 ]
 
 if settings.DEBUG:
