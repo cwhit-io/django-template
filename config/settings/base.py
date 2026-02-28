@@ -2,11 +2,16 @@
 Base Django settings shared by all environments.
 """
 
+import sys
 from pathlib import Path
 
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Allow apps in the apps/ directory to be referenced by short name
+# e.g. "blog" instead of "apps.blog" in INSTALLED_APPS
+sys.path.insert(0, str(BASE_DIR / "apps"))
 
 env = environ.Env(
     DEBUG=(bool, False),

@@ -1,4 +1,4 @@
-.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format clean reset pre-commit-install docker-build docker-up docker-up-dev docker-down docker-logs docker-shell docker-manage
+.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format check clean reset pre-commit-install startapp docker-build docker-up docker-up-dev docker-down docker-logs docker-shell docker-manage
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -71,6 +71,17 @@ superuser: venv ## Create a superuser
 
 collectstatic: venv ## Collect static files
 	$(PYTHON) manage.py collectstatic --noinput
+
+check: venv ## Run Django deployment checks
+	$(PYTHON) manage.py check --deploy
+
+startapp: venv ## Scaffold a new app in apps/ (usage: make startapp name=myapp)
+	@[ "$(name)" ] || (echo "Usage: make startapp name=<appname>"; exit 1)
+	mkdir -p apps/$(name)
+	$(PYTHON) manage.py startapp $(name) apps/$(name)
+	@echo ""
+	@echo "App created at apps/$(name)/"
+	@echo "Add '$(name)' to INSTALLED_APPS in config/settings/base.py"
 
 clean: ## Remove cache files, compiled Python, and the SQLite database
 	find . -type f -name "*.pyc" -delete

@@ -82,6 +82,8 @@ make help
 | `make migrate` | Apply database migrations |
 | `make makemigrations` | Create new migrations |
 | `make collectstatic` | Collect static files |
+| `make check` | Run Django deployment checks (`manage.py check --deploy`) |
+| `make startapp name=myapp` | Scaffold a new app in `apps/myapp/` |
 | `make superuser` | Create a Django superuser |
 | `make shell` | Open Django shell |
 | `make test` | Run pytest with coverage report |
@@ -238,6 +240,7 @@ make tailwind
 ## Project structure
 
 ```
+├── apps/                    # Project-specific Django apps (add yours here)
 ├── config/
 │   ├── settings/
 │   │   ├── base.py          # Shared settings (environ, WhiteNoise, Channels, Celery)
