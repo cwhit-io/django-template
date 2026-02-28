@@ -46,7 +46,7 @@ tailwind: ## Watch and rebuild Tailwind CSS
 	npm run tailwind:watch
 
 test: venv ## Run tests with pytest + coverage report
-	$(VENV)/bin/pytest --cov=. --cov-report=term-missing
+	$(VENV)/bin/pytest
 
 lint: venv ## Lint code with ruff
 	$(VENV)/bin/ruff check .
