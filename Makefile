@@ -51,6 +51,9 @@ test: venv ## Run tests with pytest + coverage report
 lint: venv ## Lint code with ruff
 	$(VENV)/bin/ruff check .
 
+lint-fix: venv ## Lint code with ruff
+	$(VENV)/bin/ruff check . --fix
+
 format: venv ## Auto-format code with ruff
 	$(VENV)/bin/ruff format .
 
