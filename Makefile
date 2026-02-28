@@ -1,4 +1,4 @@
-.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format clean reset pre-commit-install
+.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format clean reset pre-commit-install docker-build docker-up docker-up-dev docker-down docker-logs docker-shell docker-manage
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -75,3 +75,24 @@ clean: ## Remove cache files, compiled Python, and the SQLite database
 	rm -f db.sqlite3
 
 reset: clean setup ## Full teardown and rebuild (clean + setup)
+
+docker-build: ## Build Docker images
+	docker compose build
+
+docker-up: ## Start all Docker services (detached)
+	docker compose up -d
+
+docker-up-dev: ## Start Docker services + Tailwind watch (detached)
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+docker-down: ## Stop and remove Docker containers
+	docker compose down
+
+docker-logs: ## Tail logs for all Docker services
+	docker compose logs -f
+
+docker-shell: ## Open a shell in the web container
+	docker compose exec web bash
+
+docker-manage: ## Run a manage.py command in the web container (usage: make docker-manage cmd="migrate")
+	docker compose exec web python manage.py $(cmd)

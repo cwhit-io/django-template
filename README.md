@@ -28,7 +28,18 @@ A batteries-included Django project template — production-ready from day one.
 
 ---
 
-## Quick start (Makefile)
+## Quick start
+
+**With Docker (recommended):**
+
+```bash
+git clone <repo-url> my-project
+cd my-project
+cp .env.example .env   # set SECRET_KEY at minimum
+make docker-build && make docker-up
+```
+
+**Without Docker (local `.venv`):**
 
 ```bash
 git clone <repo-url> my-project
@@ -74,6 +85,13 @@ make help
 | `make superuser` | Create a Django superuser |
 | `make shell` | Open Django shell |
 | `make test` | Run pytest with coverage report |
+| `make docker-build` | Build Docker images |
+| `make docker-up` | Start all services in the background |
+| `make docker-up-dev` | Start all services + Tailwind watch (dev) |
+| `make docker-down` | Stop and remove containers |
+| `make docker-logs` | Tail logs for all services |
+| `make docker-shell` | Open a shell in the web container |
+| `make docker-manage cmd="..."` | Run a `manage.py` command inside the web container |
 | `make lint` | Lint code with ruff |
 | `make format` | Auto-format code with ruff |
 | `make clean` | Remove `__pycache__`, `.pyc` files, and `db.sqlite3` |
@@ -144,7 +162,53 @@ python manage.py createsuperuser
 
 ---
 
-## Running the project
+## Docker
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine + Compose plugin.
+
+The compose stack includes:
+
+| Service | Image | Purpose |
+|---|---|---|
+| `web` | local build | Daphne ASGI server (runs migrate + collectstatic on start) |
+| `worker` | local build | Celery worker |
+| `redis` | `redis:7-alpine` | Celery broker + channel layer |
+| `db` | `postgres:16-alpine` | PostgreSQL database |
+
+Tailwind CSS is built into the image at build time (`npm install` → `postinstall`). For active CSS development, a `docker-compose.dev.yml` overlay adds a Tailwind watch container:
+
+```bash
+# First time
+cp .env.example .env   # edit SECRET_KEY at minimum
+make docker-build
+make docker-up          # or: make docker-up-dev (includes Tailwind watch)
+
+# Subsequent starts
+make docker-up
+
+# Start with Tailwind watch for active CSS dev
+make docker-up-dev
+
+# Tail logs
+make docker-logs
+
+# Run management commands
+make docker-manage cmd="createsuperuser"
+make docker-manage cmd="makemigrations"
+
+# Open a shell
+make docker-shell
+
+# Stop everything
+make docker-down
+```
+
+> The `web` container runs `migrate` and `collectstatic` automatically on startup.
+> `DATABASE_URL` and `REDIS_URL` in `docker-compose.yml` override the values in your `.env` to point at the containerised services.
+
+---
+
+## Running the project (local, no Docker)
 
 ### Development server
 
