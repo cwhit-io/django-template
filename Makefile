@@ -1,4 +1,4 @@
-.PHONY: help venv install setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format clean reset
+.PHONY: help venv install env setup run dev worker tailwind test migrate makemigrations shell superuser collectstatic lint format clean reset
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -17,7 +17,17 @@ install: venv ## Install all Python and Node dependencies
 	$(PIP) install -r requirements.txt
 	npm install
 
-setup: install migrate collectstatic ## Bootstrap project from scratch (install deps, run migrations, collect static)
+env: install ## Create .env from .env.example if missing, with a generated SECRET_KEY
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		SECRET=$$($(PYTHON) -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"); \
+		sed -i "s/your-secret-key-here/$$SECRET/" .env; \
+		echo "Created .env with a generated SECRET_KEY"; \
+	else \
+		echo ".env already exists, skipping"; \
+	fi
+
+setup: env migrate collectstatic ## Bootstrap project from scratch (create .env, install deps, run migrations, collect static)
 
 run: venv ## Start Daphne, Celery worker, and Tailwind in parallel
 	$(MAKE) -j3 dev worker tailwind
