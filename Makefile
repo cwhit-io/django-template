@@ -4,8 +4,9 @@ VENV := .venv
 PYTHON := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 
-HOST := 0.0.0.0
-PORT := 8085
+-include .env
+export HOST ?= 0.0.0.0
+export PORT ?= 8085
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

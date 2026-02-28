@@ -33,25 +33,51 @@ A batteries-included Django project template — production-ready from day one.
 ```bash
 git clone <repo-url> my-project
 cd my-project
-python -m venv .venv && source .venv/bin/activate
-make install     # pip install + npm install (copies JS, builds CSS)
-cp .env.example .env   # then edit .env and set a real SECRET_KEY
-make migrate
-make dev         # starts Daphne at http://127.0.0.1:8000
+make setup       # creates .venv, installs deps, generates .env with SECRET_KEY, runs migrations, collects static
+make run         # starts Daphne + Celery worker + Tailwind in parallel
 ```
 
-In separate terminals:
+Daphne binds to `0.0.0.0:8085` by default. Override with:
 
 ```bash
-make worker      # Celery worker
-make tailwind    # Tailwind CSS in watch mode
+make dev HOST=127.0.0.1 PORT=8000
 ```
 
 Run tests:
 
 ```bash
-make test        # pytest
+make test
 ```
+
+See all available commands:
+
+```bash
+make help
+```
+
+---
+
+## Makefile reference
+
+| Command | Description |
+|---|---|
+| `make setup` | Full bootstrap: create `.venv`, install deps, generate `.env`, migrate, collectstatic |
+| `make run` | Start Daphne + Celery worker + Tailwind in parallel |
+| `make dev` | Start Daphne ASGI server only |
+| `make worker` | Start Celery worker only |
+| `make tailwind` | Watch and rebuild Tailwind CSS only |
+| `make install` | Install Python + Node dependencies |
+| `make env` | Create `.env` from `.env.example` with a generated `SECRET_KEY` (skips if `.env` exists) |
+| `make migrate` | Apply database migrations |
+| `make makemigrations` | Create new migrations |
+| `make collectstatic` | Collect static files |
+| `make superuser` | Create a Django superuser |
+| `make shell` | Open Django shell |
+| `make test` | Run pytest with coverage report |
+| `make lint` | Lint code with ruff |
+| `make format` | Auto-format code with ruff |
+| `make clean` | Remove `__pycache__`, `.pyc` files, and `db.sqlite3` |
+| `make reset` | Full teardown and rebuild (`clean` + `setup`) |
 
 ---
 
@@ -67,7 +93,7 @@ cd my-project
 ### 2. Python virtual environment
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 ```
 
@@ -82,7 +108,7 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 # Edit .env — at minimum set a unique SECRET_KEY:
-#   python -c "import secrets; print(secrets.token_urlsafe(50))"
+#   python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
 Key variables in `.env`:
@@ -123,18 +149,15 @@ python manage.py createsuperuser
 ### Development server
 
 ```bash
-daphne config.asgi:application
-# or
-make dev
+make dev         # Daphne on 0.0.0.0:8085
+make run         # Daphne + Celery + Tailwind in parallel
 ```
 
-Visits [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Visit [http://localhost:8085](http://localhost:8085).
 
 ### Celery worker
 
 ```bash
-celery -A config worker -l info
-# or
 make worker
 ```
 
@@ -143,8 +166,6 @@ make worker
 ### Tailwind CSS (watch mode)
 
 ```bash
-npm run tailwind:watch
-# or
 make tailwind
 ```
 
@@ -283,11 +304,16 @@ python manage.py collectstatic --no-input
 
 ```bash
 make test
-# or
-pytest
 ```
 
 Tests live in `core/tests.py`. Fixtures are in `conftest.py`. Settings default to `config.settings.dev` (see `pytest.ini`).
+
+## Linting & formatting
+
+```bash
+make lint     # ruff check
+make format   # ruff format
+```
 
 ---
 
